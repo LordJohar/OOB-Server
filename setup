@@ -67,12 +67,16 @@ function update_configs {
     awk -v domain_name="${DOMAIN_NAME}" -v domain_ip="${DOMAIN_IP}" '{ gsub("DOMAIN_NAME", domain_name); gsub("DOMAIN_IP", domain_ip); print $0 }' "${PWD}/_config/db.local" > "${BASE_BIND_PATH}/db.local"
 
     # Add the domain zone into the list of zones to have permission to answer to queries
-    echo "
+    
+    if !(grep -Fxq "${DOMAIN_NAME}" "${BASE_BIND_PATH}/named.conf.default-zones")
+    then
+        echo "
 zone \"${DOMAIN_NAME}\" {
       type master;
       file \"/etc/bind/db.local\";
 };
     " >> "${BASE_BIND_PATH}/named.conf.default-zones"
+    fi
 
 
     log "DB" "Adding named.conf.options to ${BASE_BIND_PATH}/named.conf.options"
